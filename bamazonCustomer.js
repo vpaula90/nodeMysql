@@ -18,10 +18,10 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId);
-  queryAllProducts();
+  showAllProducts();
 });
 
-function queryAllProducts() {
+function showAllProducts() {
     console.log("Welcome to Bamazon!!");
     console.log("--------------------");
   connection.query("SELECT * FROM products", function(err, res) {
@@ -39,11 +39,11 @@ function queryAllProducts() {
           res[i].stock_quantity
       );
     }
-    purchaseItem();
+    purchase();
   });
 }
 
-function purchaseItem() {
+function purchase() {
     inquirer.prompt([
         {
             name: "itemNumber",
@@ -60,9 +60,9 @@ function purchaseItem() {
         connection.query("SELECT * FROM products WHERE products.item_id = ?", [answer.itemNumber], function(err, res) {
 
             if (res[0].item_id == answer.itemNumber && res[0].stock_quantity >= parseInt(answer.Quantity)) {
-                var TotalPrice = res[0].price * parseInt(answer.Quantity);
+                var total = res[0].price * parseInt(answer.Quantity);
                 console.log("Success!");
-                console.log("You just spent: $" + TotalPrice);
+                console.log("You just spent: $" + total);
               
                 connection.query("UPDATE products SET ? WHERE ?", [{
                     stock_quantity: res[0].stock_quantity - parseInt(answer.Quantity)
@@ -70,12 +70,12 @@ function purchaseItem() {
                     id: res[0].item_id
                 }], function(err, res) {
                        console.log("Anything else you would like to add?");
-                       queryAllProducts();
+                       showAllProducts();
                 });
 
             } else if (res[0].item_id == answer.itemNumber && res[0].stock_quantity < parseInt(answer.Quantity)) {
                 console.log("Sorry! We don't have enough quantity for your order");
-                queryAllProducts();
+                showAllProducts();
             }
 
         });
