@@ -57,23 +57,40 @@ function purchase() {
         }
     
     ]).then(function(answer) {
+        console.log(answer);
         connection.query("SELECT * FROM products WHERE products.item_id = ?", [answer.itemNumber], function(err, res) {
 
-            if (res[0].item_id == answer.itemNumber && res[0].stock_quantity >= parseInt(answer.Quantity)) {
-                var total = res[0].price * parseInt(answer.Quantity);
+            if (res[0].item_id == answer.itemNumber && res[0].stock_quantity >= parseInt(answer.quantity)) {
+                console.log("Test");
+                var total = res[0].price * parseInt(answer.quantity);
                 console.log("Success!");
                 console.log("You just spent: $" + total);
               
+            var newQuantity = res[0].stock_quantity - parseInt(answer.quantity)
+            var newItemId = parseInt(answer.itemNumber);
+            console.log(newQuantity);
+            console.log(newItemId);
                 connection.query("UPDATE products SET ? WHERE ?", [{
-                    stock_quantity: res[0].stock_quantity - parseInt(answer.Quantity)
+                    stock_quantity: newQuantity
                 }, {
-                    id: res[0].item_id
+                    item_id: newItemId
                 }], function(err, res) {
-                       console.log("Anything else you would like to add?");
-                       showAllProducts();
+                      inquirer.prompt([ 
+                        {
+                            name: "purchaseMore",
+                            type: "confirm",
+                            message: "Anything else you would like to purchase?"
+                        }])
+                      .then(function(answer){
+                          if (answer.purchaseMore === true) {
+                              showAllProducts();
+                          } else {process.exit()}
+                          })
+                       
+                    //    showAllProducts();
                 });
 
-            } else if (res[0].item_id == answer.itemNumber && res[0].stock_quantity < parseInt(answer.Quantity)) {
+            } else if (res[0].item_id == answer.itemNumber && res[0].stock_quantity < parseInt(answer.quantity)) {
                 console.log("Sorry! We don't have enough quantity for your order");
                 showAllProducts();
             }
