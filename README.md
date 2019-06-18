@@ -1,4 +1,4 @@
-not fully working :( 
+ 
 
 Dependencies:
 Mysql
@@ -10,4 +10,5 @@ Then ask for the id for the item you want to purchase and then ask how many you 
 
 It is supposed to also then take a way from the quantity and show how much you are being charged.
 
-![text](/images/node.png)
+![Purchasing a product and then trying to purchase another but not enough:](/images/nodenoteenough.png)
+![Purchasing a product and then getting asked to purchase more but saying no and stopping the server](/images/nodeendserver.png)

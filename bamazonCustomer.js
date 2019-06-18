@@ -44,11 +44,16 @@ function showAllProducts() {
 }
 
 function purchase() {
-// funning the purchase function, first ask the user for which item and then how many
+// running the purchase function, first ask the user for which item and then how many
     inquirer.prompt([
         {
+            // name = the name that stores the answers in the answers hash
             name: "itemNumber",
+
+            // type = what type of prompt is it?
             type: "input",
+
+            // message = message to print
             message: "What is the Id for the product you would like to buy?"
         }, 
         {
@@ -57,25 +62,26 @@ function purchase() {
             message: "How many would you like to buy?"
         }
     
-    ]).then(function(answer) {
-    // use the answers from the questions above to pull from the database 
-        console.log(answer);
-        connection.query("SELECT * FROM products WHERE products.item_id = ?", [answer.itemNumber], function(err, res) {
+    ]).then(function(answers) {
+    // use the answerss from the questions above to pull from the database 
+        // console.log(answers);
 
-// if the item id in the database matches the number for the itemNumber(the answer to which item ID in the inquirer prompt) and if the quantity is less than the quantity in the answer
-            if (res[0].item_id == answer.itemNumber && res[0].stock_quantity >= parseInt(answer.quantity)) {
-                console.log("Test");
-    // get the price from the item in the database and multiply it by the quantity from the answer
-                var total = res[0].price * parseInt(answer.quantity);
+    // from the database select all from the products table where item_id = the itemNumber (the id that was prompted for)
+        connection.query("SELECT * FROM products WHERE products.item_id = ?", [answers.itemNumber], function(err, res) {
+
+// if the item id in the database matches the number for the itemNumber(the answers to which item ID in the inquirer prompt) and if the quantity is less than the quantity in the answers
+            if (res[0].item_id == answers.itemNumber && res[0].stock_quantity >= parseInt(answers.quantity)) {
+    // get the price from the item in the database and multiply it by the quantity from the answers
+                var total = res[0].price * parseInt(answers.quantity);
                 console.log("Success!");
     // show the total cost for what you are purchasing
                 console.log("You just spent: $" + total);
 
     // variable to update the quantity in the database
-            var newQuantity = res[0].stock_quantity - parseInt(answer.quantity)
-            var newItemId = parseInt(answer.itemNumber);
-            console.log(newQuantity);
-            console.log(newItemId);
+            var newQuantity = res[0].stock_quantity - parseInt(answers.quantity)
+            var newItemId = parseInt(answers.itemNumber);
+            // console.log(newQuantity);
+            // console.log(newItemId);
                 connection.query("UPDATE products SET ? WHERE ?", [{
                     stock_quantity: newQuantity
                 }, {
@@ -91,8 +97,8 @@ function purchase() {
                         }])
                 
                         // if yes run all products function wich includes purchase function in the end of it so it will relaunch the purchase inruier prompts etc. 
-                      .then(function(answer){
-                          if (answer.purchaseMore === true) {
+                      .then(function(answers){
+                          if (answers.purchaseMore === true) {
                               showAllProducts();
                         
                             //   if no then exit and stop the server
@@ -101,7 +107,7 @@ function purchase() {
                        
                 });
 // if asking for more than what is in stock let the user no there is not enogh for their order
-            } else if (res[0].item_id == answer.itemNumber && res[0].stock_quantity < parseInt(answer.quantity)) {
+            } else if (res[0].item_id == answers.itemNumber && res[0].stock_quantity < parseInt(answers.quantity)) {
                 console.log("Sorry! We don't have enough quantity for your order");
                 showAllProducts();
             }
