@@ -44,6 +44,7 @@ function showAllProducts() {
 }
 
 function purchase() {
+// funning the purchase function, first ask the user for which item and then how many
     inquirer.prompt([
         {
             name: "itemNumber",
@@ -57,15 +58,20 @@ function purchase() {
         }
     
     ]).then(function(answer) {
+    // use the answers from the questions above to pull from the database 
         console.log(answer);
         connection.query("SELECT * FROM products WHERE products.item_id = ?", [answer.itemNumber], function(err, res) {
 
+// if the item id in the database matches the number for the itemNumber(the answer to which item ID in the inquirer prompt) and if the quantity is less than the quantity in the answer
             if (res[0].item_id == answer.itemNumber && res[0].stock_quantity >= parseInt(answer.quantity)) {
                 console.log("Test");
+    // get the price from the item in the database and multiply it by the quantity from the answer
                 var total = res[0].price * parseInt(answer.quantity);
                 console.log("Success!");
+    // show the total cost for what you are purchasing
                 console.log("You just spent: $" + total);
-              
+
+    // variable to update the quantity in the database
             var newQuantity = res[0].stock_quantity - parseInt(answer.quantity)
             var newItemId = parseInt(answer.itemNumber);
             console.log(newQuantity);
@@ -75,21 +81,26 @@ function purchase() {
                 }, {
                     item_id: newItemId
                 }], function(err, res) {
+
+            // prompt user if they want to purchase something else
                       inquirer.prompt([ 
                         {
                             name: "purchaseMore",
                             type: "confirm",
                             message: "Anything else you would like to purchase?"
                         }])
+                
+                        // if yes run all products function wich includes purchase function in the end of it so it will relaunch the purchase inruier prompts etc. 
                       .then(function(answer){
                           if (answer.purchaseMore === true) {
                               showAllProducts();
+                        
+                            //   if no then exit and stop the server
                           } else {process.exit()}
                           })
                        
-                    //    showAllProducts();
                 });
-
+// if asking for more than what is in stock let the user no there is not enogh for their order
             } else if (res[0].item_id == answer.itemNumber && res[0].stock_quantity < parseInt(answer.quantity)) {
                 console.log("Sorry! We don't have enough quantity for your order");
                 showAllProducts();
